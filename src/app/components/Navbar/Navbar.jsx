@@ -49,6 +49,7 @@ export default function Navbar() {
     { title: "Services", path: "/services" },
     { title: "About Us", path: "/about" },
     { title: "Contact", path: "/contact" },
+    { title: "FAQ", path: "/faq" },
   ]
 
   const drawerList = (
@@ -118,7 +119,17 @@ export default function Navbar() {
                 <Button color="inherit" component={Link} href="/login" className="mr-2">
                   Login
                 </Button>
-                <Button variant="contained" color="primary" component={Link} href="/register">
+                <Button
+                  variant="contained"
+                  component={Link}
+                  href="/register"
+                  sx={{
+                    backgroundColor: "#1a365d",
+                    "&:hover": {
+                      backgroundColor: "#0f2744",
+                    },
+                  }}
+                >
                   Register
                 </Button>
               </>

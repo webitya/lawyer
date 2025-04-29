@@ -53,8 +53,8 @@ export default function Footer() {
           <Grid item xs={12} md={4}>
             <Box className="mb-6">
               <Link href="/" className="flex items-center mb-4">
-                <BalanceIcon className="mr-2 text-indigo-600" />
-                <Typography variant="h6" component="span" className="font-bold text-indigo-600">
+                <BalanceIcon className="mr-2" style={{ color: "#1a365d" }} />
+                <Typography variant="h6" component="span" className="font-bold" style={{ color: "#1a365d" }}>
                   DisputeResolve
                 </Typography>
               </Link>
