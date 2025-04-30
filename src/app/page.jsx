@@ -12,7 +12,6 @@ export default function Home() {
       <HomePageTestimonials />
       <HomePageFAQ />
       <HomePageCTA />
-      <h1>Aditya</h1>
     </div>
   )
 }
