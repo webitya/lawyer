@@ -72,12 +72,12 @@ export default function AdminDashboard() {
     const fetchData = async () => {
       try {
         setLoading(true)
-        
+
         // In a real app, these would be API calls
         // const casesResponse = await fetch('/api/admin/cases');
         // const usersResponse = await fetch('/api/admin/users');
         // const analyticsResponse = await fetch('/api/admin/analytics');
-        
+
         // Mock data for demonstration
         const casesData = [
           {
@@ -143,7 +143,7 @@ export default function AdminDashboard() {
             resolvedAt: "2023-04-28T10:30:00Z",
           },
         ]
-        
+
         const usersData = [
           {
             id: "user123",
@@ -191,7 +191,7 @@ export default function AdminDashboard() {
             casesCount: 0,
           },
         ]
-        
+
         const analyticsData = {
           totalCases: 25,
           resolvedCases: 15,
@@ -219,11 +219,10 @@ export default function AdminDashboard() {
             { name: "Property", days: 9 },
           ],
         }
-        
+
         setCases(casesData)
         setUsers(usersData)
         setAnalytics(analyticsData)
-        
       } catch (err) {
         console.error("Error fetching admin data:", err)
         setError("Failed to load admin dashboard data. Please try again.")
@@ -274,12 +273,10 @@ export default function AdminDashboard() {
       // const response = await fetch(`/api/admin/users/${userId}/approve`, {
       //   method: 'POST',
       // });
-      
+
       // Mock response
-      setUsers(users.map(user => 
-        user.id === userId ? { ...user, status: 'active' } : user
-      ))
-      
+      setUsers(users.map((user) => (user.id === userId ? { ...user, status: "active" } : user)))
+
       handleMenuClose()
     } catch (err) {
       console.error("Error approving user:", err)
@@ -293,12 +290,10 @@ export default function AdminDashboard() {
       // const response = await fetch(`/api/admin/users/${userId}/block`, {
       //   method: 'POST',
       // });
-      
+
       // Mock response
-      setUsers(users.map(user => 
-        user.id === userId ? { ...user, status: 'blocked' } : user
-      ))
-      
+      setUsers(users.map((user) => (user.id === userId ? { ...user, status: "blocked" } : user)))
+
       handleMenuClose()
     } catch (err) {
       console.error("Error blocking user:", err)
@@ -306,21 +301,36 @@ export default function AdminDashboard() {
     }
   }
 
-  const filteredCases = cases.filter(caseItem => {
-    const matchesSearch = caseItem.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                          caseItem.id.toLowerCase().includes(searchQuery.toLowerCase())
-    
-    const matchesFilter = filterStatus === 'all' || caseItem.status === filterStatus
-    
+  const handleViewCase = (caseId) => {
+    // In a real app, this would navigate to the case detail page
+    console.log(`Viewing case: ${caseId}`)
+    handleMenuClose()
+  }
+
+  const handleAssignMediator = (caseId) => {
+    // In a real app, this would open a dialog to assign a mediator
+    console.log(`Assigning mediator to case: ${caseId}`)
+    handleMenuClose()
+  }
+
+  const filteredCases = cases.filter((caseItem) => {
+    const matchesSearch =
+      caseItem.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      caseItem.id.toLowerCase().includes(searchQuery.toLowerCase())
+
+    const matchesFilter = filterStatus === "all" || caseItem.status === filterStatus
+
     return matchesSearch && matchesFilter
   })
 
-  const filteredUsers = users.filter(user => {
-    return user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-           user.email.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredUsers = users.filter((user) => {
+    return (
+      user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      user.email.toLowerCase().includes(searchQuery.toLowerCase())
+    )
   })
 
-  const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8']
+  const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#8884d8"]
 
   if (loading) {
     return (
@@ -343,7 +353,7 @@ export default function AdminDashboard() {
       <Typography variant="h4" component="h1" className="font-bold mb-6">
         Admin Dashboard
       </Typography>
-      
+
       {/* Analytics Cards */}
       <Grid container spacing={3} className="mb-6">
         <Grid item xs={12} sm={6} md={3}>
@@ -363,7 +373,7 @@ export default function AdminDashboard() {
             </Box>
           </Paper>
         </Grid>
-        
+
         <Grid item xs={12} sm={6} md={3}>
           <Paper elevation={2} className="p-4 h-full">
             <Box className="flex items-center">
@@ -381,7 +391,7 @@ export default function AdminDashboard() {
             </Box>
           </Paper>
         </Grid>
-        
+
         <Grid item xs={12} sm={6} md={3}>
           <Paper elevation={2} className="p-4 h-full">
             <Box className="flex items-center">
@@ -399,7 +409,7 @@ export default function AdminDashboard() {
             </Box>
           </Paper>
         </Grid>
-        
+
         <Grid item xs={12} sm={6} md={3}>
           <Paper elevation={2} className="p-4 h-full">
             <Box className="flex items-center">
@@ -418,7 +428,7 @@ export default function AdminDashboard() {
           </Paper>
         </Grid>
       </Grid>
-      
+
       {/* Tabs */}
       <Paper elevation={2} className="p-4 mb-6">
         <Tabs value={tabValue} onChange={handleTabChange} className="mb-4">
@@ -426,7 +436,7 @@ export default function AdminDashboard() {
           <Tab label="Users" />
           <Tab label="Analytics" />
         </Tabs>
-        
+
         {/* Cases Tab */}
         {tabValue === 0 && (
           <Box>
@@ -446,39 +456,39 @@ export default function AdminDashboard() {
                 }}
                 className="w-full sm:w-auto"
               />
-              
+
               <Box className="flex gap-2">
-                <Button 
-                  variant={filterStatus === 'all' ? "contained" : "outlined"} 
+                <Button
+                  variant={filterStatus === "all" ? "contained" : "outlined"}
                   size="small"
-                  onClick={() => handleFilterChange('all')}
+                  onClick={() => handleFilterChange("all")}
                 >
                   All
                 </Button>
-                <Button 
-                  variant={filterStatus === 'In Negotiation' ? "contained" : "outlined"} 
+                <Button
+                  variant={filterStatus === "In Negotiation" ? "contained" : "outlined"}
                   size="small"
-                  onClick={() => handleFilterChange('In Negotiation')}
+                  onClick={() => handleFilterChange("In Negotiation")}
                 >
                   Negotiation
                 </Button>
-                <Button 
-                  variant={filterStatus === 'In Mediation' ? "contained" : "outlined"} 
+                <Button
+                  variant={filterStatus === "In Mediation" ? "contained" : "outlined"}
                   size="small"
-                  onClick={() => handleFilterChange('In Mediation')}
+                  onClick={() => handleFilterChange("In Mediation")}
                 >
                   Mediation
                 </Button>
-                <Button 
-                  variant={filterStatus === 'Resolved' ? "contained" : "outlined"} 
+                <Button
+                  variant={filterStatus === "Resolved" ? "contained" : "outlined"}
                   size="small"
-                  onClick={() => handleFilterChange('Resolved')}
+                  onClick={() => handleFilterChange("Resolved")}
                 >
                   Resolved
                 </Button>
               </Box>
             </Box>
-            
+
             <TableContainer>
               <Table>
                 <TableHead>
@@ -493,42 +503,37 @@ export default function AdminDashboard() {
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {filteredCases
-                    .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                    .map((caseItem) => (
-                      <TableRow key={caseItem.id} hover>
-                        <TableCell>{caseItem.id}</TableCell>
-                        <TableCell>{caseItem.title}</TableCell>
-                        <TableCell>
-                          <Chip 
-                            label={caseItem.status} 
-                            color={
-                              caseItem.status === 'Resolved' 
-                                ? 'success' 
-                                : caseItem.status === 'In Mediation' 
-                                  ? 'secondary' 
-                                  : 'primary'
-                            }
-                            size="small"
-                          />
-                        </TableCell>
-                        <TableCell>{caseItem.type}</TableCell>
-                        <TableCell>{caseItem.createdBy.name}</TableCell>
-                        <TableCell>{format(new Date(caseItem.createdAt), 'MMM d, yyyy')}</TableCell>
-                        <TableCell>
-                          <IconButton 
-                            size="small"
-                            onClick={(e) => handleMenuOpen(e, caseItem)}
-                          >
-                            <MoreVert />
-                          </IconButton>
-                        </TableCell>
-                      </TableRow>
-                    ))}
+                  {filteredCases.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((caseItem) => (
+                    <TableRow key={caseItem.id} hover>
+                      <TableCell>{caseItem.id}</TableCell>
+                      <TableCell>{caseItem.title}</TableCell>
+                      <TableCell>
+                        <Chip
+                          label={caseItem.status}
+                          color={
+                            caseItem.status === "Resolved"
+                              ? "success"
+                              : caseItem.status === "In Mediation"
+                                ? "secondary"
+                                : "primary"
+                          }
+                          size="small"
+                        />
+                      </TableCell>
+                      <TableCell>{caseItem.type}</TableCell>
+                      <TableCell>{caseItem.createdBy.name}</TableCell>
+                      <TableCell>{format(new Date(caseItem.createdAt), "MMM d, yyyy")}</TableCell>
+                      <TableCell>
+                        <IconButton size="small" onClick={(e) => handleMenuOpen(e, caseItem)}>
+                          <MoreVert />
+                        </IconButton>
+                      </TableCell>
+                    </TableRow>
+                  ))}
                 </TableBody>
               </Table>
             </TableContainer>
-            
+
             <TablePagination
               rowsPerPageOptions={[5, 10, 25]}
               component="div"
@@ -540,7 +545,7 @@ export default function AdminDashboard() {
             />
           </Box>
         )}
-        
+
         {/* Users Tab */}
         {tabValue === 1 && (
           <Box>
@@ -560,7 +565,7 @@ export default function AdminDashboard() {
                 }}
               />
             </Box>
-            
+
             <TableContainer>
               <Table>
                 <TableHead>
@@ -575,48 +580,37 @@ export default function AdminDashboard() {
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {filteredUsers
-                    .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                    .map((user) => (
-                      <TableRow key={user.id} hover>
-                        <TableCell>{user.name}</TableCell>
-                        <TableCell>{user.email}</TableCell>
-                        <TableCell>
-                          <Chip 
-                            label={user.role.charAt(0).toUpperCase() + user.role.slice(1)} 
-                            color={user.role === 'mediator' ? 'secondary' : 'default'}
-                            size="small"
-                          />
-                        </TableCell>
-                        <TableCell>
-                          <Chip 
-                            label={user.status.charAt(0).toUpperCase() + user.status.slice(1)} 
-                            color={
-                              user.status === 'active' 
-                                ? 'success' 
-                                : user.status === 'pending' 
-                                  ? 'warning' 
-                                  : 'error'
-                            }
-                            size="small"
-                          />
-                        </TableCell>
-                        <TableCell>{user.casesCount}</TableCell>
-                        <TableCell>{format(new Date(user.createdAt), 'MMM d, yyyy')}</TableCell>
-                        <TableCell>
-                          <IconButton 
-                            size="small"
-                            onClick={(e) => handleMenuOpen(e, user)}
-                          >
-                            <MoreVert />
-                          </IconButton>
-                        </TableCell>
-                      </TableRow>
-                    ))}
+                  {filteredUsers.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((user) => (
+                    <TableRow key={user.id} hover>
+                      <TableCell>{user.name}</TableCell>
+                      <TableCell>{user.email}</TableCell>
+                      <TableCell>
+                        <Chip
+                          label={user.role.charAt(0).toUpperCase() + user.role.slice(1)}
+                          color={user.role === "mediator" ? "secondary" : "default"}
+                          size="small"
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <Chip
+                          label={user.status.charAt(0).toUpperCase() + user.status.slice(1)}
+                          color={user.status === "active" ? "success" : user.status === "pending" ? "warning" : "error"}
+                          size="small"
+                        />
+                      </TableCell>
+                      <TableCell>{user.casesCount}</TableCell>
+                      <TableCell>{format(new Date(user.createdAt), "MMM d, yyyy")}</TableCell>
+                      <TableCell>
+                        <IconButton size="small" onClick={(e) => handleMenuOpen(e, user)}>
+                          <MoreVert />
+                        </IconButton>
+                      </TableCell>
+                    </TableRow>
+                  ))}
                 </TableBody>
               </Table>
             </TableContainer>
-            
+
             <TablePagination
               rowsPerPageOptions={[5, 10, 25]}
               component="div"
@@ -628,7 +622,7 @@ export default function AdminDashboard() {
             />
           </Box>
         )}
-        
+
         {/* Analytics Tab */}
         {tabValue === 2 && (
           <Box>
@@ -665,7 +659,7 @@ export default function AdminDashboard() {
                   </CardContent>
                 </Card>
               </Grid>
-              
+
               {/* Cases by Type */}
               <Grid item xs={12} md={6}>
                 <Card variant="outlined" className="h-full">
@@ -698,7 +692,7 @@ export default function AdminDashboard() {
                   </CardContent>
                 </Card>
               </Grid>
-              
+
               {/* Resolution Time by Type */}
               <Grid item xs={12}>
                 <Card variant="outlined">
@@ -733,18 +727,41 @@ export default function AdminDashboard() {
           </Box>
         )}
       </Paper>
-      
+
       {/* Action Menu */}
-      <Menu
-        anchorEl={anchorEl}
-        open={Boolean(anchorEl)}
-        onClose={handleMenuClose}
-      >
-        {selectedItem && 'role' in selectedItem ? (
+      <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleMenuClose}>
+        {selectedItem && "role" in selectedItem ? (
           // User actions
           <>
-            <MenuItem onClick={() => window.location.href = `/admin/users/${selectedItem.id}`}>
-              View Details
-            </MenuItem>
-            {selectedItem.status === 'pending' && (
-              <MenuItem onClick={() => handleApproveUser(selectedItem.id)
+            <MenuItem onClick={() => (window.location.href = `/admin/users/${selectedItem.id}`)}>View Details</MenuItem>
+            {selectedItem.status === "pending" && (
+              <MenuItem onClick={() => handleApproveUser(selectedItem.id)}>Approve User</MenuItem>
+            )}
+            {selectedItem.status !== "blocked" && (
+              <MenuItem onClick={() => handleBlockUser(selectedItem.id)}>Block User</MenuItem>
+            )}
+            {selectedItem.status === "blocked" && (
+              <MenuItem onClick={() => handleApproveUser(selectedItem.id)}>Unblock User</MenuItem>
+            )}
+          </>
+        ) : (
+          selectedItem && (
+            // Case actions
+            <>
+              <MenuItem onClick={() => handleViewCase(selectedItem.id)}>View Case Details</MenuItem>
+              {selectedItem.status !== "Resolved" && (
+                <MenuItem onClick={() => handleAssignMediator(selectedItem.id)}>Assign Mediator</MenuItem>
+              )}
+              <MenuItem onClick={() => (window.location.href = `/admin/cases/${selectedItem.id}/messages`)}>
+                View Messages
+              </MenuItem>
+              <MenuItem onClick={() => (window.location.href = `/admin/cases/${selectedItem.id}/documents`)}>
+                View Documents
+              </MenuItem>
+            </>
+          )
+        )}
+      </Menu>
+    </Box>
+  )
+}
