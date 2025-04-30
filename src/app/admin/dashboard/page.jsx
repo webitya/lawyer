@@ -301,18 +301,6 @@ export default function AdminDashboard() {
     }
   }
 
-  const handleViewCase = (caseId) => {
-    // In a real app, this would navigate to the case detail page
-    console.log(`Viewing case: ${caseId}`)
-    handleMenuClose()
-  }
-
-  const handleAssignMediator = (caseId) => {
-    // In a real app, this would open a dialog to assign a mediator
-    console.log(`Assigning mediator to case: ${caseId}`)
-    handleMenuClose()
-  }
-
   const filteredCases = cases.filter((caseItem) => {
     const matchesSearch =
       caseItem.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -737,7 +725,7 @@ export default function AdminDashboard() {
             {selectedItem.status === "pending" && (
               <MenuItem onClick={() => handleApproveUser(selectedItem.id)}>Approve User</MenuItem>
             )}
-            {selectedItem.status !== "blocked" && (
+            {selectedItem.status === "active" && (
               <MenuItem onClick={() => handleBlockUser(selectedItem.id)}>Block User</MenuItem>
             )}
             {selectedItem.status === "blocked" && (
@@ -745,21 +733,17 @@ export default function AdminDashboard() {
             )}
           </>
         ) : (
-          selectedItem && (
-            // Case actions
-            <>
-              <MenuItem onClick={() => handleViewCase(selectedItem.id)}>View Case Details</MenuItem>
-              {selectedItem.status !== "Resolved" && (
-                <MenuItem onClick={() => handleAssignMediator(selectedItem.id)}>Assign Mediator</MenuItem>
-              )}
-              <MenuItem onClick={() => (window.location.href = `/admin/cases/${selectedItem.id}/messages`)}>
-                View Messages
-              </MenuItem>
-              <MenuItem onClick={() => (window.location.href = `/admin/cases/${selectedItem.id}/documents`)}>
-                View Documents
-              </MenuItem>
-            </>
-          )
+          // Case actions
+          <>
+            <MenuItem onClick={() => (window.location.href = `/admin/cases/${selectedItem.id}`)}>
+              View Case Details
+            </MenuItem>
+            {selectedItem.status !== "Resolved" && (
+              <MenuItem onClick={() => alert("Assign Mediator")}>Assign Mediator</MenuItem>
+            )}
+            <MenuItem onClick={() => alert("View Messages")}>View Messages</MenuItem>
+            <MenuItem onClick={() => alert("View Documents")}>View Documents</MenuItem>
+          </>
         )}
       </Menu>
     </Box>
