@@ -25,8 +25,24 @@ import {
   IconButton,
   Menu,
   MenuItem,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  DialogActions,
 } from "@mui/material"
-import { Search, MoreVert, CheckCircle, People, Gavel, AccessTime } from "@mui/icons-material"
+import {
+  Search,
+  MoreVert,
+  CheckCircle,
+  People,
+  Gavel,
+  AccessTime,
+  Visibility,
+  Edit,
+  Delete,
+  Block,
+} from "@mui/icons-material"
 import { format } from "date-fns"
 import {
   PieChart as RechartsPieChart,
@@ -41,8 +57,10 @@ import {
   Legend,
   ResponsiveContainer,
 } from "recharts"
+import { useRouter } from "next/navigation"
 
 export default function AdminDashboard() {
+  const router = useRouter()
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [tabValue, setTabValue] = useState(0)
@@ -54,6 +72,8 @@ export default function AdminDashboard() {
   const [filterStatus, setFilterStatus] = useState("all")
   const [anchorEl, setAnchorEl] = useState(null)
   const [selectedItem, setSelectedItem] = useState(null)
+  const [confirmDialogOpen, setConfirmDialogOpen] = useState(false)
+  const [confirmAction, setConfirmAction] = useState(null)
   const [analytics, setAnalytics] = useState({
     totalCases: 0,
     resolvedCases: 0,
@@ -299,6 +319,72 @@ export default function AdminDashboard() {
       console.error("Error blocking user:", err)
       setError("Failed to block user. Please try again.")
     }
+  }
+
+  const handleViewCase = (caseId) => {
+    router.push(`/admin/cases/${caseId}`)
+    handleMenuClose()
+  }
+
+  const handleEditCase = (caseId) => {
+    router.push(`/admin/cases/${caseId}/edit`)
+    handleMenuClose()
+  }
+
+  const handleDeleteCase = (caseId) => {
+    setConfirmAction(() => async () => {
+      try {
+        // In a real app, this would be an API call
+        // const response = await fetch(`/api/admin/cases/${caseId}`, {
+        //   method: 'DELETE',
+        // });
+
+        // Mock response
+        setCases(cases.filter((c) => c.id !== caseId))
+
+        setConfirmDialogOpen(false)
+        handleMenuClose()
+      } catch (err) {
+        console.error("Error deleting case:", err)
+        setError("Failed to delete case. Please try again.")
+      }
+    })
+
+    setConfirmDialogOpen(true)
+    handleMenuClose()
+  }
+
+  const handleViewUser = (userId) => {
+    router.push(`/admin/users/${userId}`)
+    handleMenuClose()
+  }
+
+  const handleEditUser = (userId) => {
+    router.push(`/admin/users/${userId}/edit`)
+    handleMenuClose()
+  }
+
+  const handleDeleteUser = (userId) => {
+    setConfirmAction(() => async () => {
+      try {
+        // In a real app, this would be an API call
+        // const response = await fetch(`/api/admin/users/${userId}`, {
+        //   method: 'DELETE',
+        // });
+
+        // Mock response
+        setUsers(users.filter((u) => u.id !== userId))
+
+        setConfirmDialogOpen(false)
+        handleMenuClose()
+      } catch (err) {
+        console.error("Error deleting user:", err)
+        setError("Failed to delete user. Please try again.")
+      }
+    })
+
+    setConfirmDialogOpen(true)
+    handleMenuClose()
   }
 
   const filteredCases = cases.filter((caseItem) => {
@@ -716,36 +802,62 @@ export default function AdminDashboard() {
         )}
       </Paper>
 
-      {/* Action Menu */}
+      {/* Action Menu for Cases */}
       <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleMenuClose}>
-        {selectedItem && "role" in selectedItem ? (
-          // User actions
-          <>
-            <MenuItem onClick={() => (window.location.href = `/admin/users/${selectedItem.id}`)}>View Details</MenuItem>
-            {selectedItem.status === "pending" && (
-              <MenuItem onClick={() => handleApproveUser(selectedItem.id)}>Approve User</MenuItem>
-            )}
-            {selectedItem.status === "active" && (
-              <MenuItem onClick={() => handleBlockUser(selectedItem.id)}>Block User</MenuItem>
-            )}
-            {selectedItem.status === "blocked" && (
-              <MenuItem onClick={() => handleApproveUser(selectedItem.id)}>Unblock User</MenuItem>
-            )}
-          </>
-        ) : (
+        {selectedItem && "title" in selectedItem ? (
           // Case actions
           <>
-            <MenuItem onClick={() => (window.location.href = `/admin/cases/${selectedItem.id}`)}>
-              View Case Details
+            <MenuItem onClick={() => handleViewCase(selectedItem.id)}>
+              <Visibility fontSize="small" className="mr-2" /> View Details
             </MenuItem>
-            {selectedItem.status !== "Resolved" && (
-              <MenuItem onClick={() => alert("Assign Mediator")}>Assign Mediator</MenuItem>
-            )}
-            <MenuItem onClick={() => alert("View Messages")}>View Messages</MenuItem>
-            <MenuItem onClick={() => alert("View Documents")}>View Documents</MenuItem>
+            <MenuItem onClick={() => handleEditCase(selectedItem.id)}>
+              <Edit fontSize="small" className="mr-2" /> Edit Case
+            </MenuItem>
+            <MenuItem onClick={() => handleDeleteCase(selectedItem.id)}>
+              <Delete fontSize="small" className="mr-2" /> Delete Case
+            </MenuItem>
           </>
-        )}
+        ) : selectedItem && "role" in selectedItem ? (
+          // User actions
+          <>
+            <MenuItem onClick={() => handleViewUser(selectedItem.id)}>
+              <Visibility fontSize="small" className="mr-2" /> View Details
+            </MenuItem>
+            <MenuItem onClick={() => handleEditUser(selectedItem.id)}>
+              <Edit fontSize="small" className="mr-2" /> Edit User
+            </MenuItem>
+            {selectedItem.status === "pending" && (
+              <MenuItem onClick={() => handleApproveUser(selectedItem.id)}>
+                <CheckCircle fontSize="small" className="mr-2" /> Approve User
+              </MenuItem>
+            )}
+            {selectedItem.status !== "blocked" && (
+              <MenuItem onClick={() => handleBlockUser(selectedItem.id)}>
+                <Block fontSize="small" className="mr-2" /> Block User
+              </MenuItem>
+            )}
+            <MenuItem onClick={() => handleDeleteUser(selectedItem.id)}>
+              <Delete fontSize="small" className="mr-2" /> Delete User
+            </MenuItem>
+          </>
+        ) : null}
       </Menu>
+
+      {/* Confirmation Dialog */}
+      <Dialog open={confirmDialogOpen} onClose={() => setConfirmDialogOpen(false)}>
+        <DialogTitle>Confirm Action</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Are you sure you want to proceed with this action? This cannot be undone.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setConfirmDialogOpen(false)}>Cancel</Button>
+          <Button onClick={() => confirmAction && confirmAction()} color="error" variant="contained">
+            Confirm
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   )
 }

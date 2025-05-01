@@ -42,23 +42,69 @@ export const authOptions = {
       },
     }),
     GoogleProvider({
-      clientId: process.env.GOOGLE_CLIENT_ID || "",
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET || "",
+      clientId: process.env.GOOGLE_CLIENT_ID,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+      authorization: {
+        params: {
+          prompt: "consent",
+          access_type: "offline",
+          response_type: "code",
+        },
+      },
     }),
     FacebookProvider({
       clientId: process.env.FACEBOOK_CLIENT_ID || "",
       clientSecret: process.env.FACEBOOK_CLIENT_SECRET || "",
     }),
   ],
-  session: {
-    strategy: "jwt",
-    maxAge: 30 * 24 * 60 * 60, // 30 days
-  },
   callbacks: {
-    async jwt({ token, user }) {
+    async signIn({ user, account, profile }) {
+      if (account.provider === "google" || account.provider === "facebook") {
+        try {
+          await connectDB()
+
+          // Check if user already exists
+          const existingUser = await User.findOne({ email: profile.email })
+
+          if (!existingUser) {
+            // Create new user from OAuth data
+            const newUser = new User({
+              firstName: profile.given_name || profile.name.split(" ")[0],
+              lastName: profile.family_name || profile.name.split(" ").slice(1).join(" "),
+              email: profile.email,
+              password: "", // No password for OAuth users
+              role: "disputant", // Default role
+              profileImage: profile.picture || profile.image,
+              createdAt: new Date(),
+            })
+
+            await newUser.save()
+          }
+        } catch (error) {
+          console.error("Error during OAuth sign in:", error)
+          return false
+        }
+      }
+      return true
+    },
+    async jwt({ token, user, account, profile }) {
       if (user) {
         token.id = user.id
         token.role = user.role
+
+        // If it's an OAuth sign-in, try to get the role from the database
+        if (account && (account.provider === "google" || account.provider === "facebook")) {
+          try {
+            await connectDB()
+            const dbUser = await User.findOne({ email: profile.email })
+            if (dbUser) {
+              token.role = dbUser.role
+              token.id = dbUser._id.toString()
+            }
+          } catch (error) {
+            console.error("Error fetching user role:", error)
+          }
+        }
       }
       return token
     },
@@ -75,4 +121,5 @@ export const authOptions = {
     error: "/login",
   },
   secret: process.env.NEXTAUTH_SECRET || process.env.JWT_SECRET,
+  debug: process.env.NODE_ENV === "development",
 }

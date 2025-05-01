@@ -2,6 +2,7 @@
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
+import { signIn } from "next-auth/react"
 import {
   TextField,
   Button,
@@ -19,6 +20,7 @@ import {
   Stepper,
   Step,
   StepLabel,
+  CircularProgress,
 } from "@mui/material"
 import { Google, Facebook, Visibility, VisibilityOff } from "@mui/icons-material"
 import { motion } from "framer-motion"
@@ -39,6 +41,8 @@ export default function Register() {
   const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState("")
   const [loading, setLoading] = useState(false)
+  const [googleLoading, setGoogleLoading] = useState(false)
+  const [facebookLoading, setFacebookLoading] = useState(false)
 
   const steps = ["Account Details", "Personal Information", "Confirmation"]
 
@@ -87,25 +91,43 @@ export default function Register() {
     setLoading(true)
 
     try {
-      // In a real app, this would be an API call to your backend
-      // const response = await fetch('/api/auth/register', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify(formData)
-      // });
+      const response = await fetch("/api/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      })
 
-      // if (!response.ok) throw new Error('Registration failed');
-      // const data = await response.json();
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || "Registration failed")
+      }
 
-      // Mock successful registration
-      setTimeout(() => {
-        // Redirect to login after successful registration
-        router.push("/login")
-      }, 1500)
+      // Redirect to login after successful registration
+      router.push("/login?registered=true")
     } catch (err) {
       setError(err.message || "Failed to register. Please try again.")
     } finally {
       setLoading(false)
+    }
+  }
+
+  const handleGoogleSignIn = async () => {
+    try {
+      setGoogleLoading(true)
+      await signIn("google", { callbackUrl: "/dashboard" })
+    } catch (error) {
+      setError("Google sign-in failed. Please try again.")
+      setGoogleLoading(false)
+    }
+  }
+
+  const handleFacebookSignIn = async () => {
+    try {
+      setFacebookLoading(true)
+      await signIn("facebook", { callbackUrl: "/dashboard" })
+    } catch (error) {
+      setError("Facebook sign-in failed. Please try again.")
+      setFacebookLoading(false)
     }
   }
 
@@ -307,7 +329,7 @@ export default function Register() {
 
               {activeStep === steps.length - 1 ? (
                 <Button type="submit" variant="contained" color="primary" disabled={loading}>
-                  {loading ? "Processing..." : "Complete Registration"}
+                  {loading ? <CircularProgress size={24} color="inherit" /> : "Complete Registration"}
                 </Button>
               ) : (
                 <Button variant="contained" color="primary" onClick={handleNext}>
@@ -326,11 +348,25 @@ export default function Register() {
               </Divider>
 
               <div className="space-y-3">
-                <Button fullWidth variant="outlined" startIcon={<Google />} className="py-2.5">
+                <Button
+                  fullWidth
+                  variant="outlined"
+                  startIcon={googleLoading ? <CircularProgress size={20} /> : <Google />}
+                  className="py-2.5"
+                  onClick={handleGoogleSignIn}
+                  disabled={googleLoading}
+                >
                   Continue with Google
                 </Button>
 
-                <Button fullWidth variant="outlined" startIcon={<Facebook />} className="py-2.5">
+                <Button
+                  fullWidth
+                  variant="outlined"
+                  startIcon={facebookLoading ? <CircularProgress size={20} /> : <Facebook />}
+                  className="py-2.5"
+                  onClick={handleFacebookSignIn}
+                  disabled={facebookLoading}
+                >
                   Continue with Facebook
                 </Button>
               </div>

@@ -2,7 +2,19 @@
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
-import { TextField, Button, Typography, Paper, Box, Divider, InputAdornment, IconButton, Alert } from "@mui/material"
+import { signIn } from "next-auth/react"
+import {
+  TextField,
+  Button,
+  Typography,
+  Paper,
+  Box,
+  Divider,
+  InputAdornment,
+  IconButton,
+  Alert,
+  CircularProgress,
+} from "@mui/material"
 import { Google, Facebook, Visibility, VisibilityOff } from "@mui/icons-material"
 import { motion } from "framer-motion"
 
@@ -15,6 +27,8 @@ export default function Login() {
   const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState("")
   const [loading, setLoading] = useState(false)
+  const [googleLoading, setGoogleLoading] = useState(false)
+  const [facebookLoading, setFacebookLoading] = useState(false)
 
   const handleChange = (e) => {
     const { name, value } = e.target
@@ -30,25 +44,43 @@ export default function Login() {
     setLoading(true)
 
     try {
-      // In a real app, this would be an API call to your backend
-      // const response = await fetch('/api/auth/login', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify(formData)
-      // });
+      const result = await signIn("credentials", {
+        redirect: false,
+        email: formData.email,
+        password: formData.password,
+      })
 
-      // if (!response.ok) throw new Error('Login failed');
-      // const data = await response.json();
+      if (result.error) {
+        throw new Error(result.error || "Login failed. Please check your credentials.")
+      }
 
-      // Mock successful login
-      setTimeout(() => {
-        // Redirect to dashboard after successful login
-        router.push("/dashboard")
-      }, 1500)
+      // Redirect to dashboard after successful login
+      router.push("/dashboard")
+      router.refresh()
     } catch (err) {
       setError(err.message || "Failed to login. Please try again.")
     } finally {
       setLoading(false)
+    }
+  }
+
+  const handleGoogleSignIn = async () => {
+    try {
+      setGoogleLoading(true)
+      await signIn("google", { callbackUrl: "/dashboard" })
+    } catch (error) {
+      setError("Google sign-in failed. Please try again.")
+      setGoogleLoading(false)
+    }
+  }
+
+  const handleFacebookSignIn = async () => {
+    try {
+      setFacebookLoading(true)
+      await signIn("facebook", { callbackUrl: "/dashboard" })
+    } catch (error) {
+      setError("Facebook sign-in failed. Please try again.")
+      setFacebookLoading(false)
     }
   }
 
@@ -129,7 +161,7 @@ export default function Login() {
               disabled={loading}
               className="py-3"
             >
-              {loading ? "Signing in..." : "Sign In"}
+              {loading ? <CircularProgress size={24} color="inherit" /> : "Sign In"}
             </Button>
           </form>
 
@@ -140,11 +172,25 @@ export default function Login() {
           </Divider>
 
           <div className="space-y-3">
-            <Button fullWidth variant="outlined" startIcon={<Google />} className="py-2.5">
+            <Button
+              fullWidth
+              variant="outlined"
+              startIcon={googleLoading ? <CircularProgress size={20} /> : <Google />}
+              className="py-2.5"
+              onClick={handleGoogleSignIn}
+              disabled={googleLoading}
+            >
               Continue with Google
             </Button>
 
-            <Button fullWidth variant="outlined" startIcon={<Facebook />} className="py-2.5">
+            <Button
+              fullWidth
+              variant="outlined"
+              startIcon={facebookLoading ? <CircularProgress size={20} /> : <Facebook />}
+              className="py-2.5"
+              onClick={handleFacebookSignIn}
+              disabled={facebookLoading}
+            >
               Continue with Facebook
             </Button>
           </div>
