@@ -1,8 +1,8 @@
 "use client"
-import { useState } from "react"
-import { useRouter } from "next/navigation"
+import { useState, useEffect } from "react"
+import { useRouter, useSearchParams } from "next/navigation"
 import Link from "next/link"
-import { signIn } from "next-auth/react"
+import { signIn, useSession } from "next-auth/react"
 import {
   TextField,
   Button,
@@ -14,12 +14,16 @@ import {
   IconButton,
   Alert,
   CircularProgress,
+  Snackbar,
 } from "@mui/material"
 import { Google, Facebook, Visibility, VisibilityOff } from "@mui/icons-material"
 import { motion } from "framer-motion"
 
 export default function Login() {
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const { status } = useSession()
+
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -29,6 +33,45 @@ export default function Login() {
   const [loading, setLoading] = useState(false)
   const [googleLoading, setGoogleLoading] = useState(false)
   const [facebookLoading, setFacebookLoading] = useState(false)
+  const [notification, setNotification] = useState({
+    open: false,
+    message: "",
+    severity: "success",
+  })
+
+  // Check if user is already logged in
+  useEffect(() => {
+    if (status === "authenticated") {
+      router.push("/dashboard")
+    }
+  }, [status, router])
+
+  // Check for URL parameters
+  useEffect(() => {
+    const registered = searchParams.get("registered")
+    const resetSuccess = searchParams.get("resetSuccess")
+    const error = searchParams.get("error")
+
+    if (registered === "true") {
+      setNotification({
+        open: true,
+        message: "Registration successful! Please log in.",
+        severity: "success",
+      })
+    }
+
+    if (resetSuccess === "true") {
+      setNotification({
+        open: true,
+        message: "Password reset successful! Please log in with your new password.",
+        severity: "success",
+      })
+    }
+
+    if (error) {
+      setError(decodeURIComponent(error))
+    }
+  }, [searchParams])
 
   const handleChange = (e) => {
     const { name, value } = e.target
@@ -56,7 +99,6 @@ export default function Login() {
 
       // Redirect to dashboard after successful login
       router.push("/dashboard")
-      router.refresh()
     } catch (err) {
       setError(err.message || "Failed to login. Please try again.")
     } finally {
@@ -67,7 +109,10 @@ export default function Login() {
   const handleGoogleSignIn = async () => {
     try {
       setGoogleLoading(true)
-      await signIn("google", { callbackUrl: "/dashboard" })
+      // Use callbackUrl to ensure redirection to dashboard
+      await signIn("google", {
+        callbackUrl: "/dashboard",
+      })
     } catch (error) {
       setError("Google sign-in failed. Please try again.")
       setGoogleLoading(false)
@@ -77,11 +122,27 @@ export default function Login() {
   const handleFacebookSignIn = async () => {
     try {
       setFacebookLoading(true)
-      await signIn("facebook", { callbackUrl: "/dashboard" })
+      // Use callbackUrl to ensure redirection to dashboard
+      await signIn("facebook", {
+        callbackUrl: "/dashboard",
+      })
     } catch (error) {
       setError("Facebook sign-in failed. Please try again.")
       setFacebookLoading(false)
     }
+  }
+
+  const handleCloseNotification = () => {
+    setNotification({ ...notification, open: false })
+  }
+
+  // If already authenticated, show loading
+  if (status === "loading" || status === "authenticated") {
+    return (
+      <Box className="flex justify-center items-center min-h-screen">
+        <CircularProgress />
+      </Box>
+    )
   }
 
   return (
@@ -203,6 +264,18 @@ export default function Login() {
           </Typography>
         </Paper>
       </motion.div>
+
+      {/* Notification Snackbar */}
+      <Snackbar
+        open={notification.open}
+        autoHideDuration={6000}
+        onClose={handleCloseNotification}
+        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+      >
+        <Alert onClose={handleCloseNotification} severity={notification.severity} sx={{ width: "100%" }}>
+          {notification.message}
+        </Alert>
+      </Snackbar>
     </div>
   )
 }
